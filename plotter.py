@@ -26,7 +26,7 @@ class Plotter():
             self.fig, self.axes = plt.subplots(1, self.num_elements, figsize=(8, 4))
         plt.ion()
 
-        self.animation_folder = "./animations/"
+        self.animation_folder = "./presentation_animations/"
         self.frame_count = 0
 
 

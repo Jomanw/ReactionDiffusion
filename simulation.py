@@ -1,16 +1,16 @@
-from turing_system import OriginalSystem, GM, Schnakenberg, SimpleSystem, FiveElementCoupled, Oscillatory, GMSC, Latch
+from turing_system import OriginalSystem, GM, Schnakenberg, SimpleSystem, FiveElementCoupled, Oscillatory, GMSC, Latch, AnisotropicSchnakenberg, DoubleSC
 from plotter import Plotter
 
 # CONSTANTS
 grid_size = 50
 step_size = 2./grid_size
-T = 15
+T = 5
 fps = 60
 dt = .0000035
 
-update_frequency = 1000
+update_frequency = 100
 num_iterations = int(T / dt)
-system_type = "fec"
+system_type = "dsc"
 filetype = '.gif'
 
 make_animation = True
@@ -27,7 +27,9 @@ systems = {
     "fec": FiveElementCoupled(grid_size=grid_size, dt = dt),
     "osc": Oscillatory(grid_size=grid_size, dt=.0001),
     "gmsc": GMSC(grid_size=grid_size, dt = .00001),
-    "latch": Latch(grid_size=grid_size, dt = dt)
+    "latch": Latch(grid_size=grid_size, dt = dt),
+    "asc": AnisotropicSchnakenberg(grid_size=grid_size, dt=dt),
+    "dsc": DoubleSC(grid_size=grid_size, dt = .00001)
 
 }
 
@@ -41,7 +43,7 @@ system = systems[system_type]
 plotter = Plotter(system, step_size,
                     update_frequency=update_frequency,
                     save_name = system_type,
-                    make_rgb=[1, 1, 2])
+                    make_rgb=[0, 0, 2])
 if run_experiment:
     count = 0
     system.remove_activator()

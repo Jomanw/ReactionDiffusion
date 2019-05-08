@@ -29,8 +29,11 @@ class TuringSystem():
         self.grid = self.initialize_grid()
         self.D_x = 1
         self.D_y = 1
+
+        # Diffusion Coefficients for x and y directions, for the Laplacian (second derivative)
         self.D_xx = 1
         self.D_yy = 1
+
         self.dt = dt
         self.max_val = 1000000000000
 
@@ -81,7 +84,14 @@ class TuringSystem():
         Does so using the centered-difference method. Error decays as the square of the step size.
         """
         # new_grid = np.zeros_like(grid)
-        grid = self.grid
+        grid =  np.pad(self.grid, (1, 1), 'constant')[:, :, 1:-1]
+
+        grid[0, :] = grid[1, :]
+        grid[-1, :] = grid[-2, :]
+        grid[:, 0] = grid[:, 1]
+        grid[:, -1] = grid[:, -2]
+
+
         above = grid[0:-2, 1:-1]
         below = grid[2:, 1:-1]
         left = grid[1:-1, 0:-2]
@@ -175,7 +185,7 @@ class Schnakenberg(TuringSystem):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.D_u = 1
-        self.D_v = 10
+        self.D_v = 10 
         self.gamma = 1000
         self.a = 0.126779
         self.b = 0.792366
@@ -192,7 +202,6 @@ class Schnakenberg(TuringSystem):
         du = self.dt * (self.second_derivative(h) * [self.D_u, self.D_v] + self.local_interactions_nonlinear())
 
         self.grid += du
-
 
 class GM(TuringSystem):
     def __init__(self, **kwargs):
@@ -268,6 +277,76 @@ class GMSC(TuringSystem):
     def step(self, h):
         # padded_grid = np.pad(grid, (2, 2), 'constant')[:, :, 2:-2]
         du = self.dt * (self.second_derivative(h) * [self.D_u_gm, self.D_v_gm, self.D_u_sc, self.D_v_sc] + self.local_interactions_nonlinear())
+
+        self.grid += du
+
+class DoubleSC(TuringSystem):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs, num_elements=4)
+
+        self.D_u_sc_1 = .1
+        self.D_v_sc_1 = 1
+        self.gamma = 1000
+        self.a = 0.126779
+        self.b = 0.792366
+
+        self.D_u_sc_2 = 1
+        self.D_v_sc_2 = 10
+        self.gamma = 1000
+        self.a = 0.126779
+        self.b = 0.792366
+
+    def local_interactions_nonlinear(self):
+        u_sc_1 = self.grid[:, :, 0]
+        v_sc_1 = self.grid[:, :, 1]
+        u_sc_2 = self.grid[:, :, 2]
+        v_sc_2 = self.grid[:, :, 3]
+
+        # pigment_1 = self.grid[:, :, 4]
+        # pigment_2 = self.grid[:, :, 5]
+
+        grid_copy = np.zeros_like(self.grid)
+
+        # First SC Portion
+        grid_copy[:, :, 0] = self.gamma * (self.a - u_sc_1 + (u_sc_1 ** 2) * v_sc_1) * (u_sc_2)
+        grid_copy[:, :, 1] = self.gamma * (self.b - (u_sc_1 ** 2) * v_sc_1) * (v_sc_2)
+
+        # Second SC Portion
+        grid_copy[:, :, 2] = self.gamma * (self.a - u_sc_2 + (u_sc_2 ** 2) * v_sc_2)
+        grid_copy[:, :, 3] = self.gamma * (self.b - (u_sc_2 ** 2) * v_sc_2)
+
+        # grid_copy[:, :, 4] = v_gm - self.pigment_1_decay * pigment_1 ** 2
+        # grid_copy[:, :, 5] = u_sc - self.pigment_2_decay * pigment_2 ** 2
+
+        return grid_copy
+
+    def step(self, h):
+        # padded_grid = np.pad(grid, (2, 2), 'constant')[:, :, 2:-2]
+        du = self.dt * (self.second_derivative(h) * [self.D_u_sc_1, self.D_v_sc_1, self.D_u_sc_2, self.D_v_sc_2] + self.local_interactions_nonlinear())
+
+        self.grid += du
+
+class AnisotropicSchnakenberg(TuringSystem):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.D_u = 1
+        self.D_v = 10
+        self.gamma = 1000
+        self.a = 0.126779
+        self.b = 0.792366
+        self.D_xx = 20
+        self.D_yy = .3
+
+    def local_interactions_nonlinear(self):
+        u = self.grid[:, :, 0]
+        v = self.grid[:, :, 1]
+        grid_copy = np.zeros_like(self.grid)
+        grid_copy[:, :, 0] = self.gamma * (self.a - u + (u ** 2) * v)
+        grid_copy[:, :, 1] = self.gamma * (self.b - (u ** 2) * v)
+        return grid_copy
+
+    def step(self, h):
+        du = self.dt * (self.second_derivative(h) * [self.D_u, self.D_v] + self.local_interactions_nonlinear())
 
         self.grid += du
 
