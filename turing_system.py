@@ -185,7 +185,7 @@ class Schnakenberg(TuringSystem):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.D_u = 1
-        self.D_v = 10 
+        self.D_v = 10
         self.gamma = 1000
         self.a = 0.126779
         self.b = 0.792366
@@ -206,8 +206,8 @@ class Schnakenberg(TuringSystem):
 class GM(TuringSystem):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.D_u = .000945
-        self.D_v = .27
+        self.D_u = .000945 * 40
+        self.D_v = .27 * 40
         self.r = .001
         self.mu = 2.5
         self.alpha = 100

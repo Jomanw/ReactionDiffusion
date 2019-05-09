@@ -8,9 +8,9 @@ T = 5
 fps = 60
 dt = .0000035
 
-update_frequency = 100
+update_frequency = 250
 num_iterations = int(T / dt)
-system_type = "dsc"
+system_type = "gm"
 filetype = '.gif'
 
 make_animation = True
@@ -43,7 +43,7 @@ system = systems[system_type]
 plotter = Plotter(system, step_size,
                     update_frequency=update_frequency,
                     save_name = system_type,
-                    make_rgb=[0, 0, 2])
+                    make_rgb=[0, 0, 1])
 if run_experiment:
     count = 0
     system.remove_activator()
